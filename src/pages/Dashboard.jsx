@@ -3,6 +3,13 @@ import { DollarSign, FileText, Users, Clock, Plus, ArrowRight } from 'lucide-rea
 import { Link } from 'react-router-dom'
 import api from '../services/api'
 
+const formatCurrency = (amount, currency = 'USD') => {
+  const symbols = { USD: '$', EUR: '€', GBP: '£', RWF: 'RWF ' }
+  const symbol = symbols[currency] || currency + ' '
+  const num = Number(amount || 0).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 })
+  return `${symbol}${num}`
+}
+
 export default function Dashboard() {
   const [metrics, setMetrics] = useState(null)
   const [invoices, setInvoices] = useState([])
@@ -17,9 +24,12 @@ export default function Dashboard() {
       .finally(() => setLoading(false))
   }, [])
 
+  // Use the most common currency from invoices, default to RWF
+  const mainCurrency = invoices[0]?.currency || 'RWF'
+
   const cards = [
-    { label: 'Total revenue', value: `$${metrics?.total_revenue || 0}`, icon: DollarSign },
-    { label: 'Outstanding', value: `$${metrics?.total_outstanding || 0}`, icon: Clock },
+    { label: 'Total revenue', value: formatCurrency(metrics?.total_revenue || 0, mainCurrency), icon: DollarSign },
+    { label: 'Outstanding', value: formatCurrency(metrics?.total_outstanding || 0, mainCurrency), icon: Clock },
     { label: 'Invoices', value: metrics?.total_invoices || 0, icon: FileText },
     { label: 'Customers', value: metrics?.total_customers || 0, icon: Users },
   ]
@@ -77,7 +87,7 @@ export default function Dashboard() {
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="font-bold text-sm">${inv.total_amount}</p>
+                  <p className="font-bold text-sm">{formatCurrency(inv.total_amount, inv.currency)}</p>
                   <span className={`text-xs px-2 py-0.5 rounded-full status-${inv.status}`}>{inv.status}</span>
                 </div>
               </Link>

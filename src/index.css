@@ -37,3 +37,8 @@
   .status-draft { @apply bg-gray-50 text-gray-700 border border-line; }
   .status-overdue { @apply bg-red-50 text-red-700 border border-red-100; }
 }
+
+@media print {
+  body { background: white !important; }
+  @page { margin: 1cm; }
+}

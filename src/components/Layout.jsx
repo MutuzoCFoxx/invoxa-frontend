@@ -19,7 +19,13 @@ export default function Layout() {
   ]
 
   const isActive = (path) => location.pathname === path || location.pathname.startsWith(path + '/')
-  const handleLogout = async () => { await logout(); navigate('/login') }
+  
+  const handleLogout = async () => { 
+    // Navigate FIRST to avoid being on a protected route when auth clears
+    navigate('/', { replace: true })
+    // Then clear auth state
+    await logout()
+  }
 
   return (
     <div className="min-h-screen flex bg-tint">
@@ -29,7 +35,9 @@ export default function Layout() {
 
       <aside className={`fixed lg:static inset-y-0 left-0 z-40 w-64 bg-white border-r border-line transform transition-transform ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
         <div className="h-20 flex items-center px-6 border-b border-line">
-          <LogoFull size={36} />
+          <Link to="/" className="hover:opacity-80 transition">
+            <LogoFull size={36} />
+          </Link>
         </div>
 
         <nav className="p-4 space-y-1">
@@ -67,7 +75,9 @@ export default function Layout() {
           <button onClick={() => setSidebarOpen(!sidebarOpen)} className="lg:hidden p-2 -ml-2">
             {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
-          <div className="lg:hidden"><LogoMark size={28} /></div>
+          <div className="lg:hidden">
+            <Link to="/"><LogoMark size={28} /></Link>
+          </div>
           <div className="flex-1" />
         </header>
 

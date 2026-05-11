@@ -3,6 +3,13 @@ import { Link } from 'react-router-dom'
 import { Plus, Search, FileText } from 'lucide-react'
 import api from '../services/api'
 
+const formatCurrency = (amount, currency = 'USD') => {
+  const symbols = { USD: '$', EUR: '€', GBP: '£', RWF: 'RWF ' }
+  const symbol = symbols[currency] || currency + ' '
+  const num = Number(amount || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+  return `${symbol}${num}`
+}
+
 export default function Invoices() {
   const [invoices, setInvoices] = useState([])
   const [loading, setLoading] = useState(true)
@@ -58,7 +65,7 @@ export default function Invoices() {
                   <tr key={inv.id} className="border-b border-line hover:bg-tint transition">
                     <td className="py-4 px-2"><Link to={`/invoices/${inv.id}`} className="font-medium hover:underline">{inv.invoice_number}</Link></td>
                     <td className="py-4 px-2 text-sm">{inv.customer?.name}</td>
-                    <td className="py-4 px-2 font-bold">${inv.total_amount}</td>
+                    <td className="py-4 px-2 font-bold">{formatCurrency(inv.total_amount, inv.currency)}</td>
                     <td className="py-4 px-2">
                       <span className={`text-xs px-2 py-1 rounded-full status-${inv.status}`}>{inv.status}</span>
                     </td>

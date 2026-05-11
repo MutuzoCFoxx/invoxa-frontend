@@ -12,6 +12,7 @@ import InvoiceDetail from './pages/InvoiceDetail'
 import Customers from './pages/Customers'
 import Products from './pages/Products'
 import Settings from './pages/Settings'
+import PublicInvoice from './pages/PublicInvoice'
 
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth()
@@ -36,6 +37,10 @@ export default function App() {
           <Route path="/" element={<Landing />} />
           <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
           <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
+          
+          {/* Public invoice view - no auth needed */}
+          <Route path="/i/:token" element={<PublicInvoice />} />
+          
           <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/invoices" element={<Invoices />} />

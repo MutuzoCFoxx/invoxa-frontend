@@ -65,8 +65,8 @@ export default function Landing() {
                 </div>
                 <div className="grid grid-cols-4 gap-3 mb-6">
                   {[
-                    { label: 'Revenue', value: '$12,450', icon: DollarSign },
-                    { label: 'Outstanding', value: '$3,200', icon: Clock },
+                    { label: 'Revenue', value: 'RWF 12.4M', icon: DollarSign },
+                    { label: 'Outstanding', value: 'RWF 3.2M', icon: Clock },
                     { label: 'Invoices', value: '24', icon: FileText },
                     { label: 'Customers', value: '18', icon: Users },
                   ].map(s => (
@@ -80,9 +80,9 @@ export default function Landing() {
                 <div className="border border-line rounded-lg">
                   <div className="p-3 border-b border-line text-sm font-medium">Recent invoices</div>
                   {[
-                    { num: 'INV-00001', name: 'Acme Corp', amount: '$1,100', status: 'paid' },
-                    { num: 'INV-00002', name: 'Tech Solutions', amount: '$2,500', status: 'sent' },
-                    { num: 'INV-00003', name: 'Global Services', amount: '$800', status: 'draft' },
+                    { num: 'INV-00001', name: 'Acme Corp', amount: 'RWF 1.1M', status: 'paid' },
+                    { num: 'INV-00002', name: 'Tech Solutions', amount: 'RWF 2.5M', status: 'sent' },
+                    { num: 'INV-00003', name: 'Global Services', amount: 'RWF 800K', status: 'draft' },
                   ].map(inv => (
                     <div key={inv.num} className="p-3 flex items-center justify-between border-b border-line last:border-0 text-sm">
                       <span className="font-medium">{inv.num}</span>
@@ -116,7 +116,7 @@ export default function Landing() {
               { icon: Clock, title: 'Track everything', desc: 'See who has viewed, paid, or is overdue at a glance.' },
               { icon: FileText, title: 'Professional templates', desc: 'Beautiful invoice designs that make your business look great.' },
               { icon: Users, title: 'Customer management', desc: 'Keep all your customer details organized in one place.' },
-              { icon: DollarSign, title: 'Multi-currency', desc: 'Bill clients anywhere in USD, EUR, GBP, RWF and more.' },
+              { icon: DollarSign, title: 'Multi-currency', desc: 'Bill clients anywhere in RWF, USD, EUR, GBP and more.' },
             ].map(f => (
               <div key={f.title} className="card card-hover">
                 <div className="w-10 h-10 bg-ink rounded-lg flex items-center justify-center mb-4">
@@ -136,7 +136,7 @@ export default function Landing() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
             {[
               { num: '10,000+', label: 'Active businesses' },
-              { num: '$50M+', label: 'Invoiced last year' },
+              { num: 'RWF 50B+', label: 'Invoiced last year' },
               { num: '99.9%', label: 'Uptime' },
               { num: '4.9/5', label: 'Customer rating' },
             ].map(s => (
@@ -149,7 +149,7 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Pricing */}
+      {/* Pricing - NOW IN RWF */}
       <section id="pricing" className="px-6 py-20 bg-tint border-y border-line">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-16">
@@ -160,15 +160,41 @@ export default function Landing() {
           </div>
           <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
             {[
-              { name: 'Free', price: '$0', desc: 'Perfect for getting started', features: ['Up to 5 invoices/month', '1 user', 'Basic templates', 'Email support'], cta: 'Start free' },
-              { name: 'Pro', price: '$12', desc: 'For growing businesses', features: ['Unlimited invoices', '5 users', 'Custom branding', 'Priority support', 'Advanced reports'], cta: 'Start free trial', popular: true },
-              { name: 'Business', price: '$29', desc: 'For teams', features: ['Everything in Pro', 'Unlimited users', 'API access', 'Dedicated support', 'Custom integrations'], cta: 'Contact sales' },
+              { 
+                name: 'Free', 
+                price: '0', 
+                currency: 'RWF', 
+                desc: 'Perfect for getting started', 
+                features: ['Up to 5 invoices/month', '1 user', 'Basic templates', 'Email support'], 
+                cta: 'Start free' 
+              },
+              { 
+                name: 'Pro', 
+                price: '15,000', 
+                currency: 'RWF', 
+                desc: 'For growing businesses', 
+                features: ['Unlimited invoices', '5 users', 'Custom branding', 'Priority support', 'Advanced reports'], 
+                cta: 'Start free trial', 
+                popular: true 
+              },
+              { 
+                name: 'Business', 
+                price: '35,000', 
+                currency: 'RWF', 
+                desc: 'For teams', 
+                features: ['Everything in Pro', 'Unlimited users', 'API access', 'Dedicated support', 'Custom integrations'], 
+                cta: 'Contact sales' 
+              },
             ].map(p => (
               <div key={p.name} className={`card ${p.popular ? 'ring-2 ring-ink' : ''}`}>
                 {p.popular && <div className="bg-ink text-white text-xs font-bold px-3 py-1 rounded-full inline-block mb-3">Most popular</div>}
                 <h3 className="font-bold text-2xl mb-1">{p.name}</h3>
                 <p className="text-sm text-muted mb-4">{p.desc}</p>
-                <p className="text-4xl font-bold mb-1">{p.price}<span className="text-base text-muted font-normal">/mo</span></p>
+                <div className="mb-1">
+                  <span className="text-xs text-muted font-medium">{p.currency}</span>
+                  <span className="text-4xl font-bold ml-1">{p.price}</span>
+                  <span className="text-base text-muted font-normal">/mo</span>
+                </div>
                 <Link to="/register" className={`block text-center w-full py-2.5 rounded-lg font-medium mt-6 mb-6 ${p.popular ? 'bg-ink text-white' : 'border border-line hover:bg-tint'}`}>
                   {p.cta}
                 </Link>

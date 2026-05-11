@@ -4,6 +4,14 @@ import { Plus, Trash2, ArrowLeft } from 'lucide-react'
 import { toast } from 'sonner'
 import api from '../services/api'
 
+// Currency formatter helper
+const formatCurrency = (amount, currency = 'USD') => {
+  const symbols = { USD: '$', EUR: '€', GBP: '£', RWF: 'RWF ' }
+  const symbol = symbols[currency] || currency + ' '
+  const num = Number(amount || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+  return `${symbol}${num}`
+}
+
 export default function InvoiceCreate() {
   const navigate = useNavigate()
   const [customers, setCustomers] = useState([])
@@ -12,7 +20,7 @@ export default function InvoiceCreate() {
     customer_id: '',
     issue_date: new Date().toISOString().split('T')[0],
     due_date: new Date(Date.now() + 30*86400000).toISOString().split('T')[0],
-    currency: 'USD',
+    currency: 'RWF',
     notes: '',
     items: [{ description: '', quantity: 1, unit_price: 0, tax_rate: 0 }]
   })
@@ -25,10 +33,12 @@ export default function InvoiceCreate() {
     const items = [...form.items]; items[i][key] = val; setForm({...form, items})
   }
 
-  const total = form.items.reduce((sum, item) => {
+  const subtotal = form.items.reduce((sum, item) => sum + (item.quantity || 0) * (item.unit_price || 0), 0)
+  const taxTotal = form.items.reduce((sum, item) => {
     const sub = (item.quantity || 0) * (item.unit_price || 0)
-    return sum + sub + sub * ((item.tax_rate || 0) / 100)
+    return sum + sub * ((item.tax_rate || 0) / 100)
   }, 0)
+  const total = subtotal + taxTotal
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -67,7 +77,10 @@ export default function InvoiceCreate() {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Currency</label>
               <select value={form.currency} onChange={e => setForm({...form, currency: e.target.value})} className="input">
-                <option value="USD">USD</option><option value="EUR">EUR</option><option value="GBP">GBP</option><option value="RWF">RWF</option>
+                <option value="RWF">RWF (Rwandan Franc)</option>
+                <option value="USD">USD (US Dollar)</option>
+                <option value="EUR">EUR (Euro)</option>
+                <option value="GBP">GBP (British Pound)</option>
               </select>
             </div>
             <div>
@@ -100,7 +113,7 @@ export default function InvoiceCreate() {
                   <input type="number" min="0.01" step="0.01" value={item.quantity} onChange={e => updateItem(i, 'quantity', parseFloat(e.target.value))} className="input" required />
                 </div>
                 <div className="col-span-4 md:col-span-2">
-                  <label className="block text-xs text-muted mb-1">Price</label>
+                  <label className="block text-xs text-muted mb-1">Price ({form.currency})</label>
                   <input type="number" min="0" step="0.01" value={item.unit_price} onChange={e => updateItem(i, 'unit_price', parseFloat(e.target.value))} className="input" required />
                 </div>
                 <div className="col-span-3 md:col-span-2">
@@ -116,9 +129,12 @@ export default function InvoiceCreate() {
             ))}
           </div>
           <div className="flex justify-end mt-6 pt-4 border-t border-line">
-            <div className="text-right">
-              <p className="text-sm text-muted">Total</p>
-              <p className="text-3xl font-bold tracking-tight">${total.toFixed(2)} <span className="text-base text-muted">{form.currency}</span></p>
+            <div className="text-right space-y-1">
+              <div className="text-sm text-muted">Subtotal: <span className="font-medium text-ink">{formatCurrency(subtotal, form.currency)}</span></div>
+              <div className="text-sm text-muted">Tax: <span className="font-medium text-ink">{formatCurrency(taxTotal, form.currency)}</span></div>
+              <div className="text-2xl font-bold tracking-tight pt-2 border-t border-line">
+                Total: {formatCurrency(total, form.currency)}
+              </div>
             </div>
           </div>
         </div>

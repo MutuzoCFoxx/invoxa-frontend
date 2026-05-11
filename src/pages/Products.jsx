@@ -3,6 +3,13 @@ import { Plus, Package } from 'lucide-react'
 import { toast } from 'sonner'
 import api from '../services/api'
 
+const formatCurrency = (amount, currency = 'RWF') => {
+  const symbols = { USD: '$', EUR: '€', GBP: '£', RWF: 'RWF ' }
+  const symbol = symbols[currency] || currency + ' '
+  const num = Number(amount || 0).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 })
+  return `${symbol}${num}`
+}
+
 export default function Products() {
   const [products, setProducts] = useState([])
   const [showModal, setShowModal] = useState(false)
@@ -53,7 +60,8 @@ export default function Products() {
                 <div className="flex-1">
                   <p className="font-bold">{p.name}</p>
                   {p.sku && <p className="text-xs text-muted">SKU: {p.sku}</p>}
-                  <p className="text-lg font-bold mt-1">${p.unit_price}</p>
+                  <p className="text-lg font-bold mt-1">{formatCurrency(p.unit_price, 'RWF')}</p>
+                  {p.tax_rate > 0 && <p className="text-xs text-muted">Tax: {p.tax_rate}%</p>}
                 </div>
               </div>
             </div>
@@ -68,7 +76,7 @@ export default function Products() {
             <form onSubmit={handleSubmit} className="space-y-3">
               <input value={form.name} onChange={e => setForm({...form, name: e.target.value})} placeholder="Name *" className="input" required />
               <input value={form.sku} onChange={e => setForm({...form, sku: e.target.value})} placeholder="SKU" className="input" />
-              <input type="number" step="0.01" value={form.unit_price} onChange={e => setForm({...form, unit_price: e.target.value})} placeholder="Price *" className="input" required />
+              <input type="number" step="0.01" value={form.unit_price} onChange={e => setForm({...form, unit_price: e.target.value})} placeholder="Price (RWF) *" className="input" required />
               <input type="number" value={form.tax_rate} onChange={e => setForm({...form, tax_rate: e.target.value})} placeholder="Tax rate %" className="input" />
               <div className="flex gap-2 justify-end pt-2">
                 <button type="button" onClick={() => setShowModal(false)} className="btn-secondary">Cancel</button>
