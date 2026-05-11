@@ -3,12 +3,15 @@ import { useNavigate } from 'react-router-dom'
 import { Plus, Trash2, ArrowLeft } from 'lucide-react'
 import { toast } from 'sonner'
 import api from '../services/api'
+import { useState as useStateUpgrade } from 'react'  // already imported, just add this:
+import UpgradeModal from '../components/UpgradeModal'
 
 // Currency formatter helper
 const formatCurrency = (amount, currency = 'USD') => {
   const symbols = { USD: '$', EUR: '€', GBP: '£', RWF: 'RWF ' }
   const symbol = symbols[currency] || currency + ' '
   const num = Number(amount || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+  
   return `${symbol}${num}`
 }
 
@@ -16,6 +19,7 @@ export default function InvoiceCreate() {
   const navigate = useNavigate()
   const [customers, setCustomers] = useState([])
   const [loading, setLoading] = useState(false)
+  const [showUpgrade, setShowUpgrade] = useState(false)
   const [form, setForm] = useState({
     customer_id: '',
     issue_date: new Date().toISOString().split('T')[0],
@@ -49,8 +53,14 @@ export default function InvoiceCreate() {
       toast.success('Invoice created!')
       navigate(`/invoices/${res.data.data.id}`)
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to create')
-    } finally { setLoading(false) }
+      if (err.response?.data?.error_code === 'PLAN_LIMIT_REACHED') {
+        setShowUpgrade(true)
+      } else {
+        toast.error(err.response?.data?.message || 'Failed to create')
+      }
+    } finally { 
+      setLoading(false) 
+    }
   }
 
   return (
@@ -151,6 +161,13 @@ export default function InvoiceCreate() {
           </button>
         </div>
       </form>
+      {showUpgrade && (
+  <UpgradeModal 
+    reason="You've reached your monthly invoice limit on the Free plan."
+    currentPlan="free"
+    onClose={() => setShowUpgrade(false)}
+  />
+)}
     </div>
   )
 }

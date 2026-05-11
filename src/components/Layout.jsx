@@ -3,6 +3,7 @@ import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom'
 import { LayoutDashboard, FileText, Users, Package, Settings, LogOut, Menu, X } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import { LogoFull, LogoMark } from './Logo'
+import PlanBadge from './PlanBadge'
 
 export default function Layout() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -53,7 +54,9 @@ export default function Layout() {
             )
           })}
         </nav>
-
+        <div className="absolute bottom-32 left-0 right-0">
+  <PlanBadge />
+</div>
         <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-line">
           <div className="flex items-center gap-3 px-2 mb-3">
             <div className="w-9 h-9 bg-ink rounded-full flex items-center justify-center text-white font-semibold text-sm">

@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { Toaster } from 'sonner'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
+import { PlanProvider } from './contexts/PlanContext'
 import Layout from './components/Layout'
 import Landing from './pages/Landing'
 import Login from './pages/Login'
@@ -13,6 +14,7 @@ import Customers from './pages/Customers'
 import Products from './pages/Products'
 import Settings from './pages/Settings'
 import PublicInvoice from './pages/PublicInvoice'
+import Upgrade from './pages/Upgrade'
 
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth()
@@ -32,25 +34,26 @@ export default function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <Toaster position="top-right" />
-        <Routes>
-          <Route path="/" element={<Landing />} />
-          <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
-          <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
-          
-          {/* Public invoice view - no auth needed */}
-          <Route path="/i/:token" element={<PublicInvoice />} />
-          
-          <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/invoices" element={<Invoices />} />
-            <Route path="/invoices/new" element={<InvoiceCreate />} />
-            <Route path="/invoices/:id" element={<InvoiceDetail />} />
-            <Route path="/customers" element={<Customers />} />
-            <Route path="/products" element={<Products />} />
-            <Route path="/settings" element={<Settings />} />
-          </Route>
-        </Routes>
+        <PlanProvider>
+          <Toaster position="top-right" />
+          <Routes>
+            <Route path="/" element={<Landing />} />
+            <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+            <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
+            <Route path="/i/:token" element={<PublicInvoice />} />
+            
+            <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/invoices" element={<Invoices />} />
+              <Route path="/invoices/new" element={<InvoiceCreate />} />
+              <Route path="/invoices/:id" element={<InvoiceDetail />} />
+              <Route path="/customers" element={<Customers />} />
+              <Route path="/products" element={<Products />} />
+              <Route path="/settings" element={<Settings />} />
+              <Route path="/upgrade" element={<Upgrade />} />
+            </Route>
+          </Routes>
+        </PlanProvider>
       </AuthProvider>
     </BrowserRouter>
   )
