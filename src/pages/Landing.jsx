@@ -170,7 +170,7 @@ export default function Landing() {
               },
               { 
                 name: 'Pro', 
-                price: '15,000', 
+                price: '10,000', 
                 currency: 'RWF', 
                 desc: 'For growing businesses', 
                 features: ['Unlimited invoices', '5 users', 'Custom branding', 'Priority support', 'Advanced reports'], 
@@ -179,7 +179,7 @@ export default function Landing() {
               },
               { 
                 name: 'Business', 
-                price: '35,000', 
+                price: '20,000', 
                 currency: 'RWF', 
                 desc: 'For teams', 
                 features: ['Everything in Pro', 'Unlimited users', 'API access', 'Dedicated support', 'Custom integrations'], 

@@ -6,8 +6,8 @@ import api from '../services/api'
 import { usePlan } from '../contexts/PlanContext'
 
 const PLANS = {
-  pro: { name: 'Pro', price: 15000, features: ['Unlimited invoices', '5 users', 'Custom branding', 'Priority support'] },
-  business: { name: 'Business', price: 35000, features: ['Unlimited invoices', 'Unlimited users', 'API access', 'Dedicated support'] },
+  pro: { name: 'Pro', price: 10000, features: ['Unlimited invoices', '5 users', 'Custom branding', 'Priority support'] },
+  business: { name: 'Business', price: 20000, features: ['Unlimited invoices', 'Unlimited users', 'API access', 'Dedicated support'] },
 }
 
 export default function Upgrade() {

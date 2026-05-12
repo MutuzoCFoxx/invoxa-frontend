@@ -9,7 +9,7 @@ export default function UpgradeModal({ reason, currentPlan = 'free', onClose }) 
     {
       name: 'Pro',
       key: 'pro',
-      price: '15,000',
+      price: '10,000',
       icon: Zap,
       popular: true,
       features: [
@@ -23,7 +23,7 @@ export default function UpgradeModal({ reason, currentPlan = 'free', onClose }) 
     {
       name: 'Business',
       key: 'business',
-      price: '35,000',
+      price: '20,000',
       icon: Crown,
       features: [
         'Everything in Pro',
