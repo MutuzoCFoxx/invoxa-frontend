@@ -15,6 +15,7 @@ export default function Layout() {
   const navItems = [
     { label: 'Dashboard', icon: LayoutDashboard, path: '/dashboard' },
     { label: 'Invoices', icon: FileText, path: '/invoices' },
+    { label: 'Quotations', icon: FileText, path: '/quotations' },
     { label: 'Customers', icon: Users, path: '/customers' },
     { label: 'Products', icon: Package, path: '/products' },
     { label: 'Settings', icon: Settings, path: '/settings' },

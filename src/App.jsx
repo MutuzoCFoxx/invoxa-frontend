@@ -18,7 +18,9 @@ import Upgrade from './pages/Upgrade'
 import AdminDashboard from './pages/AdminDashboard'
 import Terms from './pages/Terms'
 import Privacy from './pages/Privacy'
-
+import Quotations from './pages/Quotations'
+import QuotationCreate from './pages/QuotationCreate'
+import QuotationDetail from './pages/QuotationDetail'
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth()
   if (loading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>
@@ -52,6 +54,9 @@ export default function App() {
               <Route path="/invoices" element={<Invoices />} />
               <Route path="/invoices/new" element={<InvoiceCreate />} />
               <Route path="/invoices/:id" element={<InvoiceDetail />} />
+              <Route path="/quotations" element={<Quotations />} />
+              <Route path="/quotations/new" element={<QuotationCreate />} />
+              <Route path="/quotations/:id" element={<QuotationDetail />} />
               <Route path="/customers" element={<Customers />} />
               <Route path="/products" element={<Products />} />
               <Route path="/settings" element={<Settings />} />
