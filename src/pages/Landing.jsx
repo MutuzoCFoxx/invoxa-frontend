@@ -232,10 +232,10 @@ export default function Landing() {
             <LogoFull size={32} />
             <p className="text-sm text-muted">© 2026 Invoxa. Your business finances, simplified.</p>
             <div className="flex gap-6 text-sm text-muted">
-              <a href="#" className="hover:text-ink">Privacy</a>
-              <a href="#" className="hover:text-ink">Terms</a>
-              <a href="#" className="hover:text-ink">Contact</a>
-            </div>
+  <Link to="/privacy" className="hover:text-ink">Privacy</Link>
+  <Link to="/terms" className="hover:text-ink">Terms</Link>
+  <a href="mailto:hello@invoxa.com" className="hover:text-ink">Contact</a>
+</div>
           </div>
         </div>
       </footer>

@@ -3,6 +3,7 @@ import { Mail, MessageCircle, Link as LinkIcon, Printer, Download, Share2, X, Lo
 import { toast } from 'sonner'
 import api from '../services/api'
 
+
 const formatCurrency = (amount, currency = 'USD') => {
   const symbols = { USD: '$', EUR: '€', GBP: '£', RWF: 'RWF ' }
   const symbol = symbols[currency] || currency + ' '
@@ -81,11 +82,16 @@ Thank you!`
   }
 
   // Print
-  const print = async () => {
-    const url = shareUrl || await getShareLink()
-    if (!url) return
+  const downloadPdf = async () => {
+  try {
+    const token = (await getShareLink()).split('/').pop()
+    const url = `${import.meta.env.VITE_API_URL}/public/invoices/${invoice.id}/pdf?token=${token}`
     window.open(url, '_blank')
+    toast.success('Downloading PDF... 📄')
+  } catch (err) {
+    toast.error('Failed to download PDF')
   }
+}
 
   // Send email
   const handleSendEmail = async (e) => {
@@ -194,17 +200,17 @@ Thank you!`
             </button>
 
             <button 
-              onClick={print}
-              className="w-full flex items-center gap-3 p-3 hover:bg-tint rounded-lg transition border border-line"
-            >
-              <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
-                <Printer className="w-5 h-5 text-gray-600" />
-              </div>
-              <div className="flex-1 text-left">
-                <p className="font-medium text-sm">Print / Save as PDF</p>
-                <p className="text-xs text-muted">Open print-friendly view</p>
-              </div>
-            </button>
+  onClick={downloadPdf}
+  className="w-full flex items-center gap-3 p-3 hover:bg-tint rounded-lg transition border border-line"
+>
+  <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
+    <Download className="w-5 h-5 text-gray-600" />
+  </div>
+  <div className="flex-1 text-left">
+    <p className="font-medium text-sm">Download PDF</p>
+    <p className="text-xs text-muted">Get the invoice as PDF file</p>
+  </div>
+</button>
           </div>
         )}
 

@@ -4,6 +4,7 @@ import { LayoutDashboard, FileText, Users, Package, Settings, LogOut, Menu, X } 
 import { useAuth } from '../contexts/AuthContext'
 import { LogoFull, LogoMark } from './Logo'
 import PlanBadge from './PlanBadge'
+import { Shield } from 'lucide-react'
 
 export default function Layout() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -17,8 +18,12 @@ export default function Layout() {
     { label: 'Customers', icon: Users, path: '/customers' },
     { label: 'Products', icon: Package, path: '/products' },
     { label: 'Settings', icon: Settings, path: '/settings' },
+    
   ]
-
+// Add admin link if user is admin
+if (user?.role === 'admin') {
+  navItems.push({ label: 'Admin', icon: Shield, path: '/admin' })
+}
   const isActive = (path) => location.pathname === path || location.pathname.startsWith(path + '/')
   
   const handleLogout = async () => { 

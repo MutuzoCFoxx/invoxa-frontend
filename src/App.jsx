@@ -15,6 +15,9 @@ import Products from './pages/Products'
 import Settings from './pages/Settings'
 import PublicInvoice from './pages/PublicInvoice'
 import Upgrade from './pages/Upgrade'
+import AdminDashboard from './pages/AdminDashboard'
+import Terms from './pages/Terms'
+import Privacy from './pages/Privacy'
 
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth()
@@ -41,7 +44,9 @@ export default function App() {
             <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
             <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
             <Route path="/i/:token" element={<PublicInvoice />} />
-            
+            {/* Public legal pages */}
+            <Route path="/terms" element={<Terms />} />
+            <Route path="/privacy" element={<Privacy />} />
             <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/invoices" element={<Invoices />} />
@@ -51,6 +56,7 @@ export default function App() {
               <Route path="/products" element={<Products />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="/upgrade" element={<Upgrade />} />
+              <Route path="/admin" element={<AdminDashboard />} />
             </Route>
           </Routes>
         </PlanProvider>

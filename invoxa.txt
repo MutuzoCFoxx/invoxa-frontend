@@ -1,0 +1,51 @@
+Design and develop a modern, scalable, multi-user business management system focused on invoice and quotation generation, tracking, and management for small and medium-sized businesses. The platform should allow business owners and their teams to create, edit, manage, and monitor quotations and invoices in real time through a secure and user-friendly interface.
+
+### Core Features
+
+* User authentication and role-based access control (Admin, Manager, Staff, Accountant, Viewer)
+* Multi-tenant architecture so multiple businesses can use the same platform independently
+* Dashboard with analytics and financial summaries
+* Invoice creation, editing, duplication, and PDF export
+* Quotation generation with approval and conversion into invoices
+* Real-time invoice tracking (Paid, Pending, Overdue, Draft, Cancelled)
+* Automatic invoice numbering and tax calculations
+* Customer/client management system
+* Product and service catalog management
+* Payment tracking and transaction history
+* Email and WhatsApp invoice sharing
+* Search, filtering, and reporting tools
+* Notifications and reminders for overdue invoices
+* Multi-currency and multi-language support
+* Responsive web and mobile-friendly design
+
+### Advanced Features
+
+* Cloud-based synchronization
+* Audit logs to track edits and activities
+* Team collaboration and permissions
+* Recurring invoices and subscription billing
+* Integration with payment gateways
+* Financial reports and export to Excel/PDF
+* AI-powered insights for revenue trends and unpaid invoices
+
+### Technical Requirements
+
+* Use a modern frontend framework such as React or Next.js
+* Backend with Node.js, Express, or NestJS
+* PostgreSQL for relational database management
+* REST API or GraphQL architecture
+* JWT/OAuth authentication
+* Scalable cloud-ready deployment architecture
+* Clean UI/UX with professional dashboard components
+* Modular and maintainable codebase following senior engineering standards
+
+### Goal
+
+The system should help business owners efficiently manage quotations and invoices, improve financial tracking, reduce manual work, and enable multiple users within a company to collaborate securely and effectively on daily business operations.
+and Complete application from scratch. Think like a senior full-stack engineer developing a complete, production-ready application. First, design the system architecture and then develop the minimal but scalable version. The result should include:
+* Architecture
+* File structure
+* Database schema
+* API endpoints
+* UI architecture
+* Complete code. Design it like a real startup MVP and make it scalable.
