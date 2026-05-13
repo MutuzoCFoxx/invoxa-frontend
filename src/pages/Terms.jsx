@@ -83,7 +83,7 @@ export default function Terms() {
 
           <section>
             <h2 className="text-xl font-bold mb-2">11. Contact</h2>
-            <p>For questions about these Terms, contact us at: <strong>legal@invoxa.com</strong></p>
+            <p>For questions about these Terms, contact us at: <strong>mclaude@iremecloud.com</strong></p>
           </section>
         </div>
       </div>

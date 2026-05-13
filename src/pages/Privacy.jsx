@@ -103,7 +103,7 @@ export default function Privacy() {
 
           <section>
             <h2 className="text-xl font-bold mb-2">10. Contact Us</h2>
-            <p>Questions about privacy? Contact: <strong>privacy@invoxa.com</strong></p>
+            <p>Questions about privacy? Contact: <strong>mclaude@iremecloud.com</strong></p>
           </section>
         </div>
       </div>

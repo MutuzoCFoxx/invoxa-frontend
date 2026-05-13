@@ -230,11 +230,11 @@ export default function Landing() {
         <div className="max-w-6xl mx-auto">
           <div className="flex flex-col md:flex-row justify-between items-center gap-6">
             <LogoFull size={32} />
-            <p className="text-sm text-muted">© 2026 Invoxa. Your business finances, simplified.</p>
+            <p className="text-sm text-muted">© 2026 Invoxa. Powered by <a href="https://iremecloud.com" className="font-medium text-ink hover:underline">iremeCloud</a></p>
             <div className="flex gap-6 text-sm text-muted">
   <Link to="/privacy" className="hover:text-ink">Privacy</Link>
   <Link to="/terms" className="hover:text-ink">Terms</Link>
-  <a href="mailto:hello@invoxa.com" className="hover:text-ink">Contact</a>
+  <a href="mailto:mclaude@iremecloud.com" className="hover:text-ink">Contact</a>
 </div>
           </div>
         </div>
