@@ -1,12 +1,21 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { ArrowLeft, Trash2, FileText, ArrowRight } from 'lucide-react'
+import { ArrowLeft, Trash2, FileText, ArrowRight, Share2 } from 'lucide-react'
 import { toast } from 'sonner'
 import api from '../services/api'
+import ShareMenu from '../components/ShareMenu'
 
-const fmt = (amount, currency = 'USD') => {
+const fmt = (amount, currency = 'RWF') => {
   const sym = { USD: '$', EUR: '€', GBP: '£', RWF: 'RWF ' }
   return `${sym[currency] || currency + ' '}${Number(amount || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+}
+
+const STATUS_COLORS = {
+  draft:    'bg-gray-100 text-gray-700',
+  sent:     'bg-blue-50 text-blue-700',
+  accepted: 'bg-green-50 text-green-700',
+  rejected: 'bg-red-50 text-red-700',
+  expired:  'bg-yellow-50 text-yellow-700',
 }
 
 export default function QuotationDetail() {
@@ -15,12 +24,15 @@ export default function QuotationDetail() {
   const [quotation, setQuotation] = useState(null)
   const [workspace, setWorkspace] = useState(null)
   const [converting, setConverting] = useState(false)
+  const [showShare, setShowShare] = useState(false)
 
-  useEffect(() => {
+  const load = () => {
     Promise.all([api.get(`/quotations/${id}`), api.get('/workspace')]).then(([q, ws]) => {
-      setQuotation(q.data.data); setWorkspace(ws.data.data)
+      setQuotation(q.data.data)
+      setWorkspace(ws.data.data)
     })
-  }, [id])
+  }
+  useEffect(() => { load() }, [id])
 
   const handleDelete = async () => {
     if (!confirm('Delete this quotation?')) return
@@ -36,8 +48,11 @@ export default function QuotationDetail() {
       const res = await api.post(`/quotations/${id}/convert-to-invoice`)
       toast.success('Converted to invoice!')
       navigate(`/invoices/${res.data.data.id}`)
-    } catch (err) { toast.error(err.response?.data?.message || 'Failed to convert') }
-    finally { setConverting(false) }
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to convert')
+    } finally {
+      setConverting(false)
+    }
   }
 
   if (!quotation) return <div className="text-center py-12 text-muted">Loading...</div>
@@ -45,33 +60,43 @@ export default function QuotationDetail() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
-      <button onClick={() => navigate('/quotations')} className="flex items-center gap-2 text-sm text-muted hover:text-ink"><ArrowLeft className="w-4 h-4" /> Back</button>
+      <button onClick={() => navigate('/quotations')} className="flex items-center gap-2 text-sm text-muted hover:text-ink">
+        <ArrowLeft className="w-4 h-4" /> Back
+      </button>
+
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h1 className="text-2xl font-bold tracking-tight">Quotation details</h1>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
+          <button onClick={() => setShowShare(true)} className="btn-secondary text-sm">
+            <Share2 className="w-4 h-4" /> Share
+          </button>
           {quotation.status !== 'accepted' && (
             <button onClick={handleConvert} disabled={converting} className="btn-primary text-sm">
-              <FileText className="w-4 h-4" /> {converting ? 'Converting...' : 'Convert to Invoice'} <ArrowRight className="w-4 h-4" />
+              <FileText className="w-4 h-4" />
+              {converting ? 'Converting...' : 'Convert to Invoice'}
+              <ArrowRight className="w-4 h-4" />
             </button>
           )}
         </div>
       </div>
 
+      {/* QUOTATION DOCUMENT */}
       <div className="card p-8 md:p-12">
         <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6 mb-10 pb-8 border-b-2 border-ink">
           <div className="flex-1">
-            {workspace?.logo_url && <img src={workspace.logo_url} alt={workspace.name} className="h-12 mb-3 object-contain" onError={e => e.target.style.display='none'} />}
+            {workspace?.logo_url && <img src={workspace.logo_url} alt={workspace.name} className="h-12 mb-3 object-contain" onError={e => e.target.style.display = 'none'} />}
             <h2 className="text-2xl font-bold tracking-tight">{workspace?.name || 'Your Company'}</h2>
             {workspace?.company_address && <p className="text-sm text-muted mt-1 whitespace-pre-wrap">{workspace.company_address}</p>}
             {workspace?.company_email && <p className="text-sm text-muted">{workspace.company_email}</p>}
             {workspace?.company_phone && <p className="text-sm text-muted">{workspace.company_phone}</p>}
+            {workspace?.tax_id && <p className="text-sm text-muted">Tax ID: {workspace.tax_id}</p>}
           </div>
           <div className="text-right">
             <p className="text-xs uppercase tracking-widest text-muted mb-1">Quotation</p>
             <p className="text-3xl font-bold tracking-tight font-mono">{quotation.quotation_number}</p>
-            <span className={`inline-block mt-2 px-3 py-1 rounded-full text-xs font-medium ${
-              quotation.status === 'accepted' ? 'bg-green-50 text-green-700' : quotation.status === 'rejected' ? 'bg-red-50 text-red-700' : 'bg-gray-50 text-gray-700'
-            }`}>{quotation.status}</span>
+            <span className={`inline-block mt-2 px-3 py-1 rounded-full text-xs font-medium ${STATUS_COLORS[quotation.status] || 'bg-gray-100 text-gray-700'}`}>
+              {quotation.status}
+            </span>
           </div>
         </div>
 
@@ -79,11 +104,15 @@ export default function QuotationDetail() {
           <div>
             <p className="text-xs uppercase tracking-widest text-muted mb-2">Prepared for</p>
             <p className="font-bold text-lg">{quotation.customer?.name}</p>
+            {quotation.customer?.company_name && <p className="text-sm">{quotation.customer.company_name}</p>}
             <p className="text-sm text-muted">{quotation.customer?.email}</p>
+            {quotation.customer?.phone && <p className="text-sm text-muted">{quotation.customer.phone}</p>}
+            {quotation.customer?.billing_address && <p className="text-sm text-muted mt-1 whitespace-pre-wrap">{quotation.customer.billing_address}</p>}
           </div>
           <div className="md:text-right space-y-3">
             <div><p className="text-xs uppercase tracking-widest text-muted">Issue date</p><p className="font-medium">{new Date(quotation.issue_date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p></div>
             <div><p className="text-xs uppercase tracking-widest text-muted">Valid until</p><p className="font-medium">{new Date(quotation.valid_until).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p></div>
+            <div><p className="text-xs uppercase tracking-widest text-muted">Currency</p><p className="font-medium">{curr}</p></div>
           </div>
         </div>
 
@@ -95,29 +124,47 @@ export default function QuotationDetail() {
             <th className="py-3 text-right text-xs uppercase tracking-wide text-muted font-medium">Tax</th>
             <th className="py-3 text-right text-xs uppercase tracking-wide text-muted font-medium">Total</th>
           </tr></thead>
-          <tbody>{quotation.items?.map(item => (
-            <tr key={item.id} className="border-b border-line">
-              <td className="py-4 text-sm">{item.description}</td>
-              <td className="py-4 text-sm text-right">{item.quantity}</td>
-              <td className="py-4 text-sm text-right">{fmt(item.unit_price, curr)}</td>
-              <td className="py-4 text-sm text-right">{item.tax_rate}%</td>
-              <td className="py-4 text-right font-medium">{fmt(item.line_total, curr)}</td>
-            </tr>
-          ))}</tbody>
+          <tbody>
+            {quotation.items?.map(item => (
+              <tr key={item.id} className="border-b border-line">
+                <td className="py-4 text-sm">{item.description}</td>
+                <td className="py-4 text-sm text-right">{item.quantity}</td>
+                <td className="py-4 text-sm text-right">{fmt(item.unit_price, curr)}</td>
+                <td className="py-4 text-sm text-right">{item.tax_rate}%</td>
+                <td className="py-4 text-right font-medium">{fmt(item.line_total, curr)}</td>
+              </tr>
+            ))}
+          </tbody>
         </table>
 
-        <div className="flex justify-end mb-8"><div className="w-72 space-y-2">
-          <div className="flex justify-between text-sm"><span className="text-muted">Subtotal</span><span>{fmt(quotation.subtotal, curr)}</span></div>
-          <div className="flex justify-between text-sm"><span className="text-muted">Tax</span><span>{fmt(quotation.tax_amount, curr)}</span></div>
-          <div className="flex justify-between text-2xl font-bold pt-3 border-t-2 border-ink"><span>Total</span><span>{fmt(quotation.total_amount, curr)}</span></div>
-        </div></div>
+        <div className="flex justify-end mb-8">
+          <div className="w-72 space-y-2">
+            <div className="flex justify-between text-sm"><span className="text-muted">Subtotal</span><span>{fmt(quotation.subtotal, curr)}</span></div>
+            <div className="flex justify-between text-sm"><span className="text-muted">Tax</span><span>{fmt(quotation.tax_amount, curr)}</span></div>
+            <div className="flex justify-between text-2xl font-bold pt-3 border-t-2 border-ink"><span>Total</span><span>{fmt(quotation.total_amount, curr)}</span></div>
+          </div>
+        </div>
 
-        {quotation.notes && (<div className="border-t border-line pt-6"><p className="text-xs uppercase tracking-widest text-muted mb-2">Notes</p><p className="text-sm whitespace-pre-wrap">{quotation.notes}</p></div>)}
+        {(workspace?.bank_name || workspace?.bank_account_number) && (
+          <div className="bg-tint border border-line rounded-xl p-4 mb-6">
+            <p className="text-xs uppercase tracking-widest text-muted mb-2">Payment Details (upon acceptance)</p>
+            {workspace.bank_name && <p className="text-sm"><span className="text-muted">Bank:</span> <span className="font-medium">{workspace.bank_name}</span></p>}
+            {workspace.bank_account_number && <p className="text-sm"><span className="text-muted">Account:</span> <span className="font-medium font-mono">{workspace.bank_account_number}</span></p>}
+            {workspace.bank_account_name && <p className="text-sm"><span className="text-muted">Name:</span> <span className="font-medium">{workspace.bank_account_name}</span></p>}
+          </div>
+        )}
+
+        {quotation.notes && <div className="border-t border-line pt-6"><p className="text-xs uppercase tracking-widest text-muted mb-2">Notes</p><p className="text-sm whitespace-pre-wrap">{quotation.notes}</p></div>}
+        {workspace?.invoice_footer && <div className="border-t border-line pt-6 text-center"><p className="text-sm text-muted whitespace-pre-wrap">{workspace.invoice_footer}</p></div>}
       </div>
 
       <div className="flex justify-end">
-        <button onClick={handleDelete} className="flex items-center gap-2 text-sm text-muted hover:text-red-500 hover:bg-red-50 px-4 py-2 rounded-lg"><Trash2 className="w-4 h-4" /> Delete quotation</button>
+        <button onClick={handleDelete} className="flex items-center gap-2 text-sm text-muted hover:text-red-500 hover:bg-red-50 px-4 py-2 rounded-lg">
+          <Trash2 className="w-4 h-4" /> Delete quotation
+        </button>
       </div>
+
+      {showShare && <ShareMenu document={quotation} type="quotation" onClose={() => setShowShare(false)} onSent={load} />}
     </div>
   )
 }

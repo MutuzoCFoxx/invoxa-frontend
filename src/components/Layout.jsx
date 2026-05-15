@@ -1,10 +1,9 @@
 import { useState } from 'react'
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom'
-import { LayoutDashboard, FileText, Users, Package, Settings, LogOut, Menu, X } from 'lucide-react'
+import { LayoutDashboard, FileText, Users, Package, Settings, LogOut, Menu, X, Receipt, FileCheck, Shield } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import { LogoFull, LogoMark } from './Logo'
 import PlanBadge from './PlanBadge'
-import { Shield } from 'lucide-react'
 
 export default function Layout() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -13,18 +12,17 @@ export default function Layout() {
   const navigate = useNavigate()
 
   const navItems = [
-    { label: 'Dashboard', icon: LayoutDashboard, path: '/dashboard' },
-    { label: 'Invoices', icon: FileText, path: '/invoices' },
-    { label: 'Quotations', icon: FileText, path: '/quotations' },
-    { label: 'Customers', icon: Users, path: '/customers' },
-    { label: 'Products', icon: Package, path: '/products' },
-    { label: 'Settings', icon: Settings, path: '/settings' },
-    
+    { label: 'Dashboard',  icon: LayoutDashboard, path: '/dashboard' },
+    { label: 'Invoices',   icon: FileText,         path: '/invoices' },
+    { label: 'Quotations', icon: FileCheck,         path: '/quotations' },
+    { label: 'Expenses',   icon: Receipt,           path: '/expenses' },
+    { label: 'Customers',  icon: Users,             path: '/customers' },
+    { label: 'Products',   icon: Package,           path: '/products' },
+    { label: 'Settings',   icon: Settings,          path: '/settings' },
   ]
-// Add admin link if user is admin
-if (user?.role === 'admin') {
-  navItems.push({ label: 'Admin', icon: Shield, path: '/admin' })
-}
+  if (user?.role === 'admin') {
+    navItems.push({ label: 'Admin', icon: Shield, path: '/admin' })
+  }
   const isActive = (path) => location.pathname === path || location.pathname.startsWith(path + '/')
   
   const handleLogout = async () => { 

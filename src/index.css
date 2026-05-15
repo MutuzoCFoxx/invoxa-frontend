@@ -36,6 +36,10 @@
   .status-sent { @apply bg-blue-50 text-blue-700 border border-blue-100; }
   .status-draft { @apply bg-gray-50 text-gray-700 border border-line; }
   .status-overdue { @apply bg-red-50 text-red-700 border border-red-100; }
+  .status-partially_paid { @apply bg-yellow-50 text-yellow-700 border border-yellow-100; }
+  .status-accepted { @apply bg-green-50 text-green-700 border border-green-100; }
+  .status-rejected { @apply bg-red-50 text-red-700 border border-red-100; }
+  .status-expired { @apply bg-yellow-50 text-yellow-700 border border-yellow-100; }
 }
 
 @media print {

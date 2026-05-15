@@ -10,27 +10,30 @@ import Dashboard from './pages/Dashboard'
 import Invoices from './pages/Invoices'
 import InvoiceCreate from './pages/InvoiceCreate'
 import InvoiceDetail from './pages/InvoiceDetail'
+import Quotations from './pages/Quotations'
+import QuotationCreate from './pages/QuotationCreate'
+import QuotationDetail from './pages/QuotationDetail'
+import Expenses from './pages/Expenses'
 import Customers from './pages/Customers'
 import Products from './pages/Products'
 import Settings from './pages/Settings'
 import PublicInvoice from './pages/PublicInvoice'
+import PublicQuotation from './pages/PublicQuotation'
 import Upgrade from './pages/Upgrade'
 import AdminDashboard from './pages/AdminDashboard'
 import Terms from './pages/Terms'
 import Privacy from './pages/Privacy'
-import Quotations from './pages/Quotations'
-import QuotationCreate from './pages/QuotationCreate'
-import QuotationDetail from './pages/QuotationDetail'
+
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth()
-  if (loading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>
+  if (loading) return <div className="min-h-screen flex items-center justify-center text-muted">Loading...</div>
   if (!user) return <Navigate to="/login" />
   return children
 }
 
 function PublicRoute({ children }) {
   const { user, loading } = useAuth()
-  if (loading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>
+  if (loading) return <div className="min-h-screen flex items-center justify-center text-muted">Loading...</div>
   if (user) return <Navigate to="/dashboard" />
   return children
 }
@@ -40,28 +43,34 @@ export default function App() {
     <BrowserRouter>
       <AuthProvider>
         <PlanProvider>
-          <Toaster position="top-right" />
+          <Toaster position="top-right" richColors />
           <Routes>
+            {/* Public */}
             <Route path="/" element={<Landing />} />
-            <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+            <Route path="/login"    element={<PublicRoute><Login /></PublicRoute>} />
             <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
+            <Route path="/terms"    element={<Terms />} />
+            <Route path="/privacy"  element={<Privacy />} />
+
+            {/* Public share views (no auth) */}
             <Route path="/i/:token" element={<PublicInvoice />} />
-            {/* Public legal pages */}
-            <Route path="/terms" element={<Terms />} />
-            <Route path="/privacy" element={<Privacy />} />
+            <Route path="/q/:token" element={<PublicQuotation />} />
+
+            {/* Protected app */}
             <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/invoices" element={<Invoices />} />
-              <Route path="/invoices/new" element={<InvoiceCreate />} />
-              <Route path="/invoices/:id" element={<InvoiceDetail />} />
-              <Route path="/quotations" element={<Quotations />} />
+              <Route path="/dashboard"      element={<Dashboard />} />
+              <Route path="/invoices"       element={<Invoices />} />
+              <Route path="/invoices/new"   element={<InvoiceCreate />} />
+              <Route path="/invoices/:id"   element={<InvoiceDetail />} />
+              <Route path="/quotations"     element={<Quotations />} />
               <Route path="/quotations/new" element={<QuotationCreate />} />
               <Route path="/quotations/:id" element={<QuotationDetail />} />
-              <Route path="/customers" element={<Customers />} />
-              <Route path="/products" element={<Products />} />
-              <Route path="/settings" element={<Settings />} />
-              <Route path="/upgrade" element={<Upgrade />} />
-              <Route path="/admin" element={<AdminDashboard />} />
+              <Route path="/expenses"       element={<Expenses />} />
+              <Route path="/customers"      element={<Customers />} />
+              <Route path="/products"       element={<Products />} />
+              <Route path="/settings"       element={<Settings />} />
+              <Route path="/upgrade"        element={<Upgrade />} />
+              <Route path="/admin"          element={<AdminDashboard />} />
             </Route>
           </Routes>
         </PlanProvider>
