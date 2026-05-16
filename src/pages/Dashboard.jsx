@@ -3,6 +3,7 @@ import { DollarSign, FileText, Users, Clock, Plus, ArrowRight, TrendingUp, Alert
 import { Link } from 'react-router-dom'
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts'
 import api from '../services/api'
+import ReferralWidget from '../components/ReferralWidget'
 
 const fmt = (amount, currency = 'RWF') => {
   const sym = { USD: '$', EUR: '€', GBP: '£', RWF: 'RWF ' }
@@ -136,6 +137,9 @@ export default function Dashboard() {
           )}
         </div>
       </div>
+
+      {/* Referral widget */}
+      <ReferralWidget />
 
       {/* Overdue alert */}
       {(metrics?.overdue_count || 0) > 0 && (
