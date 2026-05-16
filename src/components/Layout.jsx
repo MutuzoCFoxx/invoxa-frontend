@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom'
-import { LayoutDashboard, FileText, Users, Package, Settings, LogOut, Menu, X, Receipt, FileCheck, Shield } from 'lucide-react'
+import { LayoutDashboard, FileText, Users, Package, Settings, LogOut, Menu, X, Receipt, FileCheck, Shield, BarChart2 } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import { LogoFull, LogoMark } from './Logo'
 import PlanBadge from './PlanBadge'
@@ -18,6 +18,7 @@ export default function Layout() {
     { label: 'Expenses',   icon: Receipt,           path: '/expenses' },
     { label: 'Customers',  icon: Users,             path: '/customers' },
     { label: 'Products',   icon: Package,           path: '/products' },
+    { label: 'Reports',    icon: BarChart2,          path: '/reports' },
     { label: 'Settings',   icon: Settings,          path: '/settings' },
   ]
   if (user?.role === 'admin') {

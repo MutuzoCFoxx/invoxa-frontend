@@ -1,18 +1,13 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Plus, Trash2, ArrowLeft } from 'lucide-react'
+import { Plus, Trash2, ArrowLeft, Info } from 'lucide-react'
 import { toast } from 'sonner'
 import api from '../services/api'
-import { useState as useStateUpgrade } from 'react'  // already imported, just add this:
 import UpgradeModal from '../components/UpgradeModal'
 
-// Currency formatter helper
-const formatCurrency = (amount, currency = 'USD') => {
-  const symbols = { USD: '$', EUR: '€', GBP: '£', RWF: 'RWF ' }
-  const symbol = symbols[currency] || currency + ' '
-  const num = Number(amount || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-  
-  return `${symbol}${num}`
+const fmt = (amount, currency = 'RWF') => {
+  const sym = { USD: '$', EUR: '€', GBP: '£', RWF: 'RWF ' }
+  return `${sym[currency] || currency + ' '}${Number(amount || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 }
 
 export default function InvoiceCreate() {
@@ -20,36 +15,64 @@ export default function InvoiceCreate() {
   const [customers, setCustomers] = useState([])
   const [loading, setLoading] = useState(false)
   const [showUpgrade, setShowUpgrade] = useState(false)
+  const [taxSettings, setTaxSettings] = useState({ type: 'on_total', rate: 0, label: 'Tax', inclusive: false })
   const [form, setForm] = useState({
     customer_id: '',
     issue_date: new Date().toISOString().split('T')[0],
-    due_date: new Date(Date.now() + 30*86400000).toISOString().split('T')[0],
+    due_date: new Date(Date.now() + 30 * 86400000).toISOString().split('T')[0],
     currency: 'RWF',
     notes: '',
-    items: [{ description: '', quantity: 1, unit_price: 0, tax_rate: 0 }]
+    tax_rate: 0,
+    items: [{ description: '', quantity: 1, unit_price: 0, tax_rate: 0 }],
   })
 
-  useEffect(() => { api.get('/customers').then(res => setCustomers(res.data.data.data || [])) }, [])
+  useEffect(() => {
+    api.get('/customers').then(res => setCustomers(res.data.data.data || []))
+    api.get('/workspace').then(res => {
+      const ws = res.data.data
+      const taxRate = parseFloat(ws.tax_rate) || 0
+      const taxType = ws.tax_type || 'on_total'
+      setTaxSettings({ type: taxType, rate: taxRate, label: ws.tax_label || 'Tax', inclusive: !!ws.tax_inclusive })
+      setForm(f => ({
+        ...f,
+        currency: ws.currency || 'RWF',
+        tax_rate: taxType === 'on_total' ? taxRate : 0,
+        items: [{ description: '', quantity: 1, unit_price: 0, tax_rate: taxType === 'per_item' ? taxRate : 0 }],
+      }))
+    })
+  }, [])
 
-  const addItem = () => setForm({...form, items: [...form.items, { description: '', quantity: 1, unit_price: 0, tax_rate: 0 }]})
-  const removeItem = (i) => setForm({...form, items: form.items.filter((_,idx) => idx !== i)})
-  const updateItem = (i, key, val) => {
-    const items = [...form.items]; items[i][key] = val; setForm({...form, items})
-  }
+  const addItem = () => setForm({ ...form, items: [...form.items, { description: '', quantity: 1, unit_price: 0, tax_rate: taxSettings.type === 'per_item' ? taxSettings.rate : 0 }] })
+  const removeItem = (i) => setForm({ ...form, items: form.items.filter((_, idx) => idx !== i) })
+  const updateItem = (i, key, val) => { const items = [...form.items]; items[i][key] = val; setForm({ ...form, items }) }
 
   const subtotal = form.items.reduce((sum, item) => sum + (item.quantity || 0) * (item.unit_price || 0), 0)
-  const taxTotal = form.items.reduce((sum, item) => {
+
+  // Per-item tax (when type=per_item) — each item has its own tax_rate
+  const perItemTax = form.items.reduce((sum, item) => {
     const sub = (item.quantity || 0) * (item.unit_price || 0)
     return sum + sub * ((item.tax_rate || 0) / 100)
   }, 0)
-  const total = subtotal + taxTotal
+
+  // On-total tax
+  const onTotalTax = taxSettings.type === 'on_total' ? subtotal * ((form.tax_rate || 0) / 100) : 0
+
+  const taxAmount = taxSettings.type === 'on_total' ? onTotalTax : perItemTax
+  const total = taxSettings.inclusive ? subtotal : subtotal + taxAmount
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     if (!form.customer_id) return toast.error('Select a customer')
     setLoading(true)
     try {
-      const res = await api.post('/invoices', form)
+      const payload = {
+        ...form,
+        // For on_total, pass tax_rate at top level; items carry 0
+        items: taxSettings.type === 'on_total'
+          ? form.items.map(item => ({ ...item, tax_rate: 0 }))
+          : form.items,
+      }
+      const res = await api.post('/invoices', payload)
       toast.success('Invoice created!')
       navigate(`/invoices/${res.data.data.id}`)
     } catch (err) {
@@ -58,9 +81,7 @@ export default function InvoiceCreate() {
       } else {
         toast.error(err.response?.data?.message || 'Failed to create')
       }
-    } finally { 
-      setLoading(false) 
-    }
+    } finally { setLoading(false) }
   }
 
   return (
@@ -79,14 +100,14 @@ export default function InvoiceCreate() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Customer *</label>
-              <select value={form.customer_id} onChange={e => setForm({...form, customer_id: e.target.value})} className="input" required>
+              <select value={form.customer_id} onChange={e => setForm({ ...form, customer_id: e.target.value })} className="input" required>
                 <option value="">Select customer...</option>
                 {customers.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Currency</label>
-              <select value={form.currency} onChange={e => setForm({...form, currency: e.target.value})} className="input">
+              <select value={form.currency} onChange={e => setForm({ ...form, currency: e.target.value })} className="input">
                 <option value="RWF">RWF (Rwandan Franc)</option>
                 <option value="USD">USD (US Dollar)</option>
                 <option value="EUR">EUR (Euro)</option>
@@ -95,11 +116,11 @@ export default function InvoiceCreate() {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Issue date</label>
-              <input type="date" value={form.issue_date} onChange={e => setForm({...form, issue_date: e.target.value})} className="input" required />
+              <input type="date" value={form.issue_date} onChange={e => setForm({ ...form, issue_date: e.target.value })} className="input" required />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Due date</label>
-              <input type="date" value={form.due_date} onChange={e => setForm({...form, due_date: e.target.value})} className="input" required />
+              <input type="date" value={form.due_date} onChange={e => setForm({ ...form, due_date: e.target.value })} className="input" required />
             </div>
           </div>
         </div>
@@ -126,11 +147,13 @@ export default function InvoiceCreate() {
                   <label className="block text-xs text-muted mb-1">Price ({form.currency})</label>
                   <input type="number" min="0" step="0.01" value={item.unit_price} onChange={e => updateItem(i, 'unit_price', parseFloat(e.target.value))} className="input" required />
                 </div>
-                <div className="col-span-3 md:col-span-2">
-                  <label className="block text-xs text-muted mb-1">Tax %</label>
-                  <input type="number" min="0" max="100" value={item.tax_rate} onChange={e => updateItem(i, 'tax_rate', parseFloat(e.target.value))} className="input" />
-                </div>
-                <div className="col-span-2 md:col-span-1">
+                {taxSettings.type === 'per_item' && (
+                  <div className="col-span-3 md:col-span-2">
+                    <label className="block text-xs text-muted mb-1">{taxSettings.label} %</label>
+                    <input type="number" min="0" max="100" value={item.tax_rate} onChange={e => updateItem(i, 'tax_rate', parseFloat(e.target.value))} className="input" />
+                  </div>
+                )}
+                <div className={taxSettings.type === 'per_item' ? 'col-span-2 md:col-span-1' : 'col-span-2 md:col-span-3'}>
                   <button type="button" onClick={() => removeItem(i)} className="w-full p-2.5 text-muted hover:text-red-500 hover:bg-red-50 rounded-lg">
                     <Trash2 className="w-4 h-4 mx-auto" />
                   </button>
@@ -138,12 +161,37 @@ export default function InvoiceCreate() {
               </div>
             ))}
           </div>
+
+          {/* On-total tax row */}
+          {taxSettings.type === 'on_total' && (
+            <div className="mt-4 pt-4 border-t border-line flex items-center gap-3">
+              <Info className="w-4 h-4 text-muted flex-shrink-0" />
+              <label className="text-sm font-medium text-gray-700 flex-shrink-0">{taxSettings.label} rate (%)</label>
+              <input
+                type="number" min="0" max="100" step="0.01"
+                value={form.tax_rate}
+                onChange={e => setForm({ ...form, tax_rate: parseFloat(e.target.value) || 0 })}
+                className="input w-24"
+              />
+              {taxSettings.inclusive && <span className="text-xs text-muted">(inclusive — already included in prices)</span>}
+            </div>
+          )}
+
           <div className="flex justify-end mt-6 pt-4 border-t border-line">
-            <div className="text-right space-y-1">
-              <div className="text-sm text-muted">Subtotal: <span className="font-medium text-ink">{formatCurrency(subtotal, form.currency)}</span></div>
-              <div className="text-sm text-muted">Tax: <span className="font-medium text-ink">{formatCurrency(taxTotal, form.currency)}</span></div>
-              <div className="text-2xl font-bold tracking-tight pt-2 border-t border-line">
-                Total: {formatCurrency(total, form.currency)}
+            <div className="text-right space-y-1 min-w-[200px]">
+              <div className="flex justify-between text-sm text-muted">
+                <span>Subtotal</span>
+                <span className="font-medium text-ink">{fmt(subtotal, form.currency)}</span>
+              </div>
+              {taxAmount > 0 && (
+                <div className="flex justify-between text-sm text-muted">
+                  <span>{taxSettings.label} ({taxSettings.type === 'on_total' ? form.tax_rate : '—'}%){taxSettings.inclusive ? ' incl.' : ''}</span>
+                  <span className="font-medium text-ink">{taxSettings.inclusive ? 'included' : fmt(taxAmount, form.currency)}</span>
+                </div>
+              )}
+              <div className="flex justify-between text-2xl font-bold tracking-tight pt-2 border-t border-line">
+                <span>Total</span>
+                <span>{fmt(total, form.currency)}</span>
               </div>
             </div>
           </div>
@@ -151,7 +199,7 @@ export default function InvoiceCreate() {
 
         <div className="card">
           <label className="block text-sm font-medium text-gray-700 mb-1.5">Notes (optional)</label>
-          <textarea value={form.notes} onChange={e => setForm({...form, notes: e.target.value})} className="input" rows="3" placeholder="Add any notes..." />
+          <textarea value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} className="input" rows="3" placeholder="Add any notes..." />
         </div>
 
         <div className="flex gap-3 justify-end">
@@ -161,13 +209,14 @@ export default function InvoiceCreate() {
           </button>
         </div>
       </form>
+
       {showUpgrade && (
-  <UpgradeModal 
-    reason="You've reached your monthly invoice limit on the Free plan."
-    currentPlan="free"
-    onClose={() => setShowUpgrade(false)}
-  />
-)}
+        <UpgradeModal
+          reason="You've reached your monthly invoice limit on the Free plan."
+          currentPlan="free"
+          onClose={() => setShowUpgrade(false)}
+        />
+      )}
     </div>
   )
 }
