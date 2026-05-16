@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react'
-import { Loader2, User, Lock, Building2, Save } from 'lucide-react'
+import { useState, useEffect, useRef } from 'react'
+import { Loader2, User, Lock, Building2, Save, Upload, X, ImagePlus } from 'lucide-react'
 import { toast } from 'sonner'
 import { useAuth } from '../contexts/AuthContext'
 import api from '../services/api'
@@ -9,7 +9,10 @@ export default function Settings() {
   const [activeTab, setActiveTab] = useState('profile')
   const [loading, setLoading] = useState(false)
   const [workspaceLoading, setWorkspaceLoading] = useState(true)
-  
+  const [logoUploading, setLogoUploading] = useState(false)
+  const [dragOver, setDragOver] = useState(false)
+  const fileInputRef = useRef(null)
+
   const [profile, setProfile] = useState({ first_name: '', last_name: '', email: '' })
   const [password, setPassword] = useState({ current_password: '', password: '', password_confirmation: '' })
   const [workspace, setWorkspace] = useState({
@@ -73,6 +76,50 @@ export default function Settings() {
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to update password')
     } finally { setLoading(false) }
+  }
+
+  const uploadLogo = async (file) => {
+    if (!file) return
+    const allowed = ['image/jpeg', 'image/jpg', 'image/png', 'image/svg+xml', 'image/webp']
+    if (!allowed.includes(file.type)) {
+      return toast.error('Please upload a JPEG, PNG, SVG or WebP image')
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      return toast.error('Logo must be smaller than 2 MB')
+    }
+    setLogoUploading(true)
+    try {
+      const formData = new FormData()
+      formData.append('logo', file)
+      const res = await api.post('/workspace/logo', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      })
+      setWorkspace(w => ({ ...w, logo_url: res.data.logo_url }))
+      toast.success('Logo uploaded!')
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Upload failed')
+    } finally {
+      setLogoUploading(false)
+    }
+  }
+
+  const handleFileInput = (e) => uploadLogo(e.target.files[0])
+
+  const handleDrop = (e) => {
+    e.preventDefault()
+    setDragOver(false)
+    uploadLogo(e.dataTransfer.files[0])
+  }
+
+  const handleRemoveLogo = async () => {
+    if (!confirm('Remove your company logo?')) return
+    try {
+      await api.delete('/workspace/logo')
+      setWorkspace(w => ({ ...w, logo_url: '' }))
+      toast.success('Logo removed')
+    } catch {
+      toast.error('Failed to remove logo')
+    }
   }
 
   const handleWorkspaceUpdate = async (e) => {
@@ -153,22 +200,76 @@ export default function Settings() {
           
           {workspaceLoading ? <p className="text-muted">Loading...</p> : (
             <form onSubmit={handleWorkspaceUpdate} className="space-y-4">
+              {/* LOGO UPLOAD */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Company logo URL</label>
-                <input 
-                  type="url"
-                  value={workspace.logo_url} 
-                  onChange={e => setWorkspace({...workspace, logo_url: e.target.value})} 
-                  placeholder="https://yourcompany.com/logo.png" 
-                  className="input" 
-                />
-                {workspace.logo_url && (
-                  <div className="mt-3 p-3 bg-tint border border-line rounded-lg">
-                    <p className="text-xs text-muted mb-2">Preview:</p>
-                    <img src={workspace.logo_url} alt="Logo" className="h-16 object-contain" onError={(e) => e.target.style.display = 'none'} />
+                <label className="block text-sm font-medium text-gray-700 mb-2">Company Logo</label>
+
+                {workspace.logo_url ? (
+                  /* — Preview with remove button — */
+                  <div className="flex items-start gap-4 p-4 bg-tint border border-line rounded-xl">
+                    <div className="flex-1 min-w-0 bg-white border border-line rounded-lg p-3 flex items-center justify-center" style={{ minHeight: 80 }}>
+                      <img
+                        src={workspace.logo_url}
+                        alt="Company logo"
+                        className="max-h-16 max-w-full object-contain"
+                        onError={e => e.target.style.display = 'none'}
+                      />
+                    </div>
+                    <div className="flex flex-col gap-2 flex-shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={logoUploading}
+                        className="btn-secondary text-xs py-1.5 px-3"
+                      >
+                        {logoUploading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Upload className="w-3 h-3" />}
+                        Replace
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleRemoveLogo}
+                        className="flex items-center gap-1.5 text-xs text-red-500 hover:text-red-700 px-3 py-1.5 hover:bg-red-50 rounded-lg transition"
+                      >
+                        <X className="w-3 h-3" /> Remove
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  /* — Drop zone — */
+                  <div
+                    onClick={() => fileInputRef.current?.click()}
+                    onDragOver={e => { e.preventDefault(); setDragOver(true) }}
+                    onDragLeave={() => setDragOver(false)}
+                    onDrop={handleDrop}
+                    className={`relative flex flex-col items-center justify-center gap-3 p-8 border-2 border-dashed rounded-xl cursor-pointer transition ${
+                      dragOver ? 'border-ink bg-tint scale-[1.01]' : 'border-line hover:border-gray-400 hover:bg-tint/50'
+                    }`}
+                  >
+                    {logoUploading ? (
+                      <Loader2 className="w-8 h-8 text-muted animate-spin" />
+                    ) : (
+                      <div className="w-12 h-12 bg-tint rounded-xl flex items-center justify-center">
+                        <ImagePlus className="w-6 h-6 text-muted" />
+                      </div>
+                    )}
+                    <div className="text-center">
+                      <p className="text-sm font-medium text-ink">
+                        {logoUploading ? 'Uploading...' : 'Click to upload or drag & drop'}
+                      </p>
+                      <p className="text-xs text-muted mt-1">PNG, JPG, SVG or WebP · Max 2 MB</p>
+                      <p className="text-xs text-muted">Recommended size: <strong>400 × 120 px</strong> (transparent background)</p>
+                    </div>
                   </div>
                 )}
-                <p className="text-xs text-muted mt-1">💡 Upload to imgur.com or similar, then paste link</p>
+
+                {/* Hidden file input */}
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/jpeg,image/jpg,image/png,image/svg+xml,image/webp"
+                  className="hidden"
+                  onChange={handleFileInput}
+                />
               </div>
 
               <div>
