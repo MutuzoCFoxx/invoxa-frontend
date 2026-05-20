@@ -9,8 +9,8 @@ export default function Login() {
   const { login } = useAuth()
   const navigate = useNavigate()
   const [loading, setLoading] = useState(false)
-  const [email, setEmail] = useState('admin@invoxa.com')
-  const [password, setPassword] = useState('password123')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -40,11 +40,11 @@ export default function Login() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Email</label>
-              <input type="email" value={email} onChange={e => setEmail(e.target.value)} className="input" required />
+              <input type="email" value={email} onChange={e => setEmail(e.target.value)} className="input" autoComplete="email" required />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Password</label>
-              <input type="password" value={password} onChange={e => setPassword(e.target.value)} className="input" required />
+              <input type="password" value={password} onChange={e => setPassword(e.target.value)} className="input" autoComplete="current-password" required />
             </div>
             <button type="submit" disabled={loading} className="btn-primary w-full justify-center">
               {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <>Sign in <ArrowRight className="w-4 h-4" /></>}

@@ -65,24 +65,24 @@ export default function Register() {
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">First name</label>
-                <input value={form.first_name} onChange={e => setForm({...form, first_name: e.target.value})} className="input" required />
+                <input value={form.first_name} onChange={e => setForm({...form, first_name: e.target.value})} className="input" autoComplete="given-name" required />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">Last name</label>
-                <input value={form.last_name} onChange={e => setForm({...form, last_name: e.target.value})} className="input" required />
+                <input value={form.last_name} onChange={e => setForm({...form, last_name: e.target.value})} className="input" autoComplete="family-name" required />
               </div>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Email</label>
-              <input type="email" value={form.email} onChange={e => setForm({...form, email: e.target.value})} className="input" required />
+              <input type="email" value={form.email} onChange={e => setForm({...form, email: e.target.value})} className="input" autoComplete="email" required />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Password</label>
-              <input type="password" value={form.password} onChange={e => setForm({...form, password: e.target.value})} className="input" minLength={8} required />
+              <input type="password" value={form.password} onChange={e => setForm({...form, password: e.target.value})} className="input" autoComplete="new-password" minLength={8} required />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Confirm password</label>
-              <input type="password" value={form.password_confirmation} onChange={e => setForm({...form, password_confirmation: e.target.value})} className="input" required />
+              <input type="password" value={form.password_confirmation} onChange={e => setForm({...form, password_confirmation: e.target.value})} className="input" autoComplete="new-password" required />
             </div>
 
             {/* Referral code toggle */}
