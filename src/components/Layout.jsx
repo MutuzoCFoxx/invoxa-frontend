@@ -21,7 +21,7 @@ export default function Layout() {
     { label: 'Reports',    icon: BarChart2,          path: '/reports' },
     { label: 'Settings',   icon: Settings,          path: '/settings' },
   ]
-  if (user?.role === 'admin') {
+  if (user?.is_admin) {
     navItems.push({ label: 'Admin', icon: Shield, path: '/admin' })
   }
   const isActive = (path) => location.pathname === path || location.pathname.startsWith(path + '/')

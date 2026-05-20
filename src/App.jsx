@@ -20,7 +20,7 @@ import Settings from './pages/Settings'
 import PublicInvoice from './pages/PublicInvoice'
 import PublicQuotation from './pages/PublicQuotation'
 import Upgrade from './pages/Upgrade'
-import AdminDashboard from './pages/AdminDashboard'
+import Admin from './pages/Admin'
 import Reports from './pages/Reports'
 import Terms from './pages/Terms'
 import Privacy from './pages/Privacy'
@@ -72,7 +72,7 @@ export default function App() {
               <Route path="/settings"       element={<Settings />} />
               <Route path="/reports"        element={<Reports />} />
               <Route path="/upgrade"        element={<Upgrade />} />
-              <Route path="/admin"          element={<AdminDashboard />} />
+              <Route path="/admin"          element={<Admin />} />
             </Route>
           </Routes>
         </PlanProvider>
