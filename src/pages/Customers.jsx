@@ -6,7 +6,7 @@ import api from '../services/api'
 export default function Customers() {
   const [customers, setCustomers] = useState([])
   const [showModal, setShowModal] = useState(false)
-  const [form, setForm] = useState({ name: '', email: '', phone: '', company_name: '' })
+  const [form, setForm] = useState({ name: '', email: '', phone: '', company_name: '', tin: '' })
 
   const load = () => api.get('/customers').then(res => setCustomers(res.data.data.data || []))
   useEffect(() => { load() }, [])
@@ -17,7 +17,7 @@ export default function Customers() {
       await api.post('/customers', form)
       toast.success('Customer added!')
       setShowModal(false)
-      setForm({ name: '', email: '', phone: '', company_name: '' })
+      setForm({ name: '', email: '', phone: '', company_name: '', tin: '' })
       load()
     } catch (err) { toast.error('Failed to add customer') }
   }
@@ -56,6 +56,7 @@ export default function Customers() {
                   <div className="mt-2 space-y-1">
                     <p className="text-xs text-muted flex items-center gap-1.5"><Mail className="w-3 h-3" />{c.email}</p>
                     {c.phone && <p className="text-xs text-muted flex items-center gap-1.5"><Phone className="w-3 h-3" />{c.phone}</p>}
+                    {c.tin && <p className="text-xs text-muted">TIN: {c.tin}</p>}
                   </div>
                 </div>
               </div>
@@ -73,6 +74,7 @@ export default function Customers() {
               <input type="email" value={form.email} onChange={e => setForm({...form, email: e.target.value})} placeholder="Email *" className="input" required />
               <input value={form.phone} onChange={e => setForm({...form, phone: e.target.value})} placeholder="Phone" className="input" />
               <input value={form.company_name} onChange={e => setForm({...form, company_name: e.target.value})} placeholder="Company" className="input" />
+              <input value={form.tin} onChange={e => setForm({...form, tin: e.target.value})} placeholder="TIN (Tax ID)" className="input" />
               <div className="flex gap-2 justify-end pt-2">
                 <button type="button" onClick={() => setShowModal(false)} className="btn-secondary">Cancel</button>
                 <button type="submit" className="btn-primary">Add</button>
