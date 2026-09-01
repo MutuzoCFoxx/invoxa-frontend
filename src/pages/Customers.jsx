@@ -1,25 +1,46 @@
 import { useEffect, useState } from 'react'
-import { Plus, Mail, Phone, Users } from 'lucide-react'
+import { Plus, Mail, Phone, Users, Pencil } from 'lucide-react'
 import { toast } from 'sonner'
 import api from '../services/api'
+
+const emptyForm = { name: '', email: '', phone: '', company_name: '', tin: '' }
 
 export default function Customers() {
   const [customers, setCustomers] = useState([])
   const [showModal, setShowModal] = useState(false)
-  const [form, setForm] = useState({ name: '', email: '', phone: '', company_name: '', tin: '' })
+  const [editingId, setEditingId] = useState(null)
+  const [form, setForm] = useState(emptyForm)
 
   const load = () => api.get('/customers').then(res => setCustomers(res.data.data.data || []))
   useEffect(() => { load() }, [])
 
+  const openAdd = () => {
+    setEditingId(null)
+    setForm(emptyForm)
+    setShowModal(true)
+  }
+
+  const openEdit = (c) => {
+    setEditingId(c.id)
+    setForm({ name: c.name || '', email: c.email || '', phone: c.phone || '', company_name: c.company_name || '', tin: c.tin || '' })
+    setShowModal(true)
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     try {
-      await api.post('/customers', form)
-      toast.success('Customer added!')
+      if (editingId) {
+        await api.put(`/customers/${editingId}`, form)
+        toast.success('Customer updated!')
+      } else {
+        await api.post('/customers', form)
+        toast.success('Customer added!')
+      }
       setShowModal(false)
-      setForm({ name: '', email: '', phone: '', company_name: '', tin: '' })
+      setEditingId(null)
+      setForm(emptyForm)
       load()
-    } catch (err) { toast.error('Failed to add customer') }
+    } catch (err) { toast.error(editingId ? 'Failed to update customer' : 'Failed to add customer') }
   }
 
   return (
@@ -29,7 +50,7 @@ export default function Customers() {
           <h1 className="text-3xl font-bold tracking-tight">Customers</h1>
           <p className="text-muted mt-1">Manage your customer list</p>
         </div>
-        <button onClick={() => setShowModal(true)} className="btn-primary">
+        <button onClick={openAdd} className="btn-primary">
           <Plus className="w-4 h-4" /> Add Customer
         </button>
       </div>
@@ -38,7 +59,7 @@ export default function Customers() {
         <div className="card text-center py-16">
           <Users className="w-12 h-12 text-gray-300 mx-auto mb-3" />
           <p className="text-muted mb-4">No customers yet</p>
-          <button onClick={() => setShowModal(true)} className="btn-primary">
+          <button onClick={openAdd} className="btn-primary">
             <Plus className="w-4 h-4" /> Add your first customer
           </button>
         </div>
@@ -59,6 +80,9 @@ export default function Customers() {
                     {c.tin && <p className="text-xs text-muted">TIN: {c.tin}</p>}
                   </div>
                 </div>
+                <button onClick={() => openEdit(c)} className="text-muted hover:text-ink p-1.5 rounded-lg hover:bg-tint" title="Edit customer">
+                  <Pencil className="w-4 h-4" />
+                </button>
               </div>
             </div>
           ))}
@@ -68,7 +92,7 @@ export default function Customers() {
       {showModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50" onClick={() => setShowModal(false)}>
           <div className="bg-white rounded-2xl p-6 w-full max-w-md border border-line" onClick={e => e.stopPropagation()}>
-            <h2 className="text-xl font-bold tracking-tight mb-4">Add customer</h2>
+            <h2 className="text-xl font-bold tracking-tight mb-4">{editingId ? 'Edit customer' : 'Add customer'}</h2>
             <form onSubmit={handleSubmit} className="space-y-3">
               <input value={form.name} onChange={e => setForm({...form, name: e.target.value})} placeholder="Name *" className="input" required />
               <input type="email" value={form.email} onChange={e => setForm({...form, email: e.target.value})} placeholder="Email *" className="input" required />
@@ -77,7 +101,7 @@ export default function Customers() {
               <input value={form.tin} onChange={e => setForm({...form, tin: e.target.value})} placeholder="TIN (Tax ID)" className="input" />
               <div className="flex gap-2 justify-end pt-2">
                 <button type="button" onClick={() => setShowModal(false)} className="btn-secondary">Cancel</button>
-                <button type="submit" className="btn-primary">Add</button>
+                <button type="submit" className="btn-primary">{editingId ? 'Save' : 'Add'}</button>
               </div>
             </form>
           </div>
