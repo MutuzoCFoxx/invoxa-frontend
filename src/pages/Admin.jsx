@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Users, TrendingUp, ShieldOff, Shield, Crown, Zap, Search, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Users, TrendingUp, ShieldOff, Shield, Crown, Zap, Search, ChevronLeft, ChevronRight, AlertTriangle } from 'lucide-react'
 import { toast } from 'sonner'
 import api from '../services/api'
 
@@ -19,6 +19,7 @@ export default function Admin() {
   const [search, setSearch]         = useState('')
   const [planFilter, setPlanFilter] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
+  const [billingFilter, setBillingFilter] = useState('')
   const [page, setPage]     = useState(1)
   const [actionLoading, setActionLoading] = useState(null)
 
@@ -27,7 +28,7 @@ export default function Admin() {
 
   const loadUsers = () => {
     setLoading(true)
-    api.get('/admin/users', { params: { search, plan: planFilter, status: statusFilter, page } })
+    api.get('/admin/users', { params: { search, plan: planFilter, status: statusFilter, billing: billingFilter, page } })
       .then(r => {
         setUsers(r.data.data.data || [])
         setMeta(r.data.data)
@@ -37,7 +38,7 @@ export default function Admin() {
   }
 
   useEffect(() => { loadStats() }, [])
-  useEffect(() => { loadUsers() }, [search, planFilter, statusFilter, page])
+  useEffect(() => { loadUsers() }, [search, planFilter, statusFilter, billingFilter, page])
 
   const handlePlan = async (user, plan) => {
     setActionLoading(`plan-${user.id}`)
@@ -70,12 +71,13 @@ export default function Admin() {
 
       {/* Stats */}
       {stats && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
           {[
             { label: 'Total users',    value: fmt(stats.total_users),    icon: Users,       color: 'text-blue-600' },
             { label: 'Pro',            value: fmt(stats.pro_users),       icon: Zap,         color: 'text-blue-500' },
             { label: 'Business',       value: fmt(stats.business_users),  icon: Crown,       color: 'text-purple-600' },
             { label: 'MRR (RWF)',      value: fmt(stats.mrr),             icon: TrendingUp,  color: 'text-green-600' },
+            { label: 'Overdue',        value: fmt(stats.overdue_users),   icon: AlertTriangle, color: 'text-red-600' },
           ].map(s => {
             const Icon = s.icon
             return (
@@ -116,6 +118,10 @@ export default function Admin() {
             <option value="active">Active</option>
             <option value="inactive">Inactive</option>
           </select>
+          <select className="input w-36" value={billingFilter} onChange={e => { setBillingFilter(e.target.value); setPage(1) }}>
+            <option value="">All billing</option>
+            <option value="overdue">Overdue only</option>
+          </select>
         </div>
 
         {/* Table */}
@@ -125,6 +131,7 @@ export default function Admin() {
               <tr className="border-b border-line">
                 <th className="py-3 text-left text-xs uppercase tracking-wide text-muted font-medium">User</th>
                 <th className="py-3 text-left text-xs uppercase tracking-wide text-muted font-medium">Plan</th>
+                <th className="py-3 text-left text-xs uppercase tracking-wide text-muted font-medium">Renewal Due</th>
                 <th className="py-3 text-left text-xs uppercase tracking-wide text-muted font-medium">Status</th>
                 <th className="py-3 text-left text-xs uppercase tracking-wide text-muted font-medium">Joined</th>
                 <th className="py-3 text-right text-xs uppercase tracking-wide text-muted font-medium">Actions</th>
@@ -132,12 +139,14 @@ export default function Admin() {
             </thead>
             <tbody>
               {loading ? (
-                <tr><td colSpan={5} className="py-12 text-center text-muted">Loading...</td></tr>
+                <tr><td colSpan={6} className="py-12 text-center text-muted">Loading...</td></tr>
               ) : users.length === 0 ? (
-                <tr><td colSpan={5} className="py-12 text-center text-muted">No users found</td></tr>
+                <tr><td colSpan={6} className="py-12 text-center text-muted">No users found</td></tr>
               ) : users.map(user => {
                 const plan = user.workspace?.plan || 'free'
                 const PlanIcon = PLAN_ICONS[plan]
+                const dueAt = user.workspace?.plan_expires_at
+                const isOverdue = plan !== 'free' && dueAt && new Date(dueAt) < new Date()
                 return (
                   <tr key={user.id} className="border-b border-gray-50 hover:bg-gray-50/50">
                     <td className="py-3.5">
@@ -149,6 +158,19 @@ export default function Admin() {
                         {PlanIcon && <PlanIcon className="w-3 h-3" />}
                         {plan}
                       </span>
+                    </td>
+                    <td className="py-3.5">
+                      {plan === 'free' ? (
+                        <span className="text-xs text-muted">—</span>
+                      ) : dueAt ? (
+                        <div className={`text-xs ${isOverdue ? 'text-red-600 font-semibold' : 'text-muted'}`}>
+                          {isOverdue && <AlertTriangle className="w-3 h-3 inline mr-1 -mt-0.5" />}
+                          {new Date(dueAt).toLocaleDateString()}
+                          {isOverdue && <span className="block">Overdue</span>}
+                        </div>
+                      ) : (
+                        <span className="text-xs text-muted">—</span>
+                      )}
                     </td>
                     <td className="py-3.5">
                       <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium ${user.is_active ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
